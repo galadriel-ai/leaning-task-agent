@@ -30,7 +30,38 @@ def coin_price_tool(task: str) -> str:
     Args:
         task: The name of the token.
     """
-    return "123.45" # TODO: sometimes crypto is volatile and price may change
+    return "123.45"  # TODO: sometimes crypto is volatile and price may change
+
+
+# TODO: this API seems to break the Agent loop?
+# TODO: tried to format the results as simple string output
+@tool
+def dex_screener_api(task: str) -> str:
+    """
+    Get the latest token profiles. Returns the results as a big chunk of text with
+    the chain, token address and the description of the Token.
+    Args:
+         task: empty
+    """
+    import requests
+
+    response = requests.get(
+        "https://api.dexscreener.com/token-profiles/latest/v1",
+        headers={},
+    )
+    data = response.json()
+    result = ""
+    for token in data:
+        try:
+            d = "Chain: " + token["chainId"]
+            d += ", tokenAddress: " + token["tokenAddress"]
+            d += ", description: " + token["description"]
+            for link in token["links"]:
+                d += f', {link["type"]}: {link["url"]}'
+            result += d + "\n"
+        except:
+            pass
+    return result
 
 
 async def main():
@@ -39,9 +70,12 @@ async def main():
         api_key=os.getenv("OPENAI_API_KEY"),
     )
     search_tool = DuckDuckGoSearchTool()
-    agent = CodeAgent(tools=[search_tool, coin_price_tool], model=model, add_base_tools=True)
-    agent.run("What is the price of SOL today?")
+    agent = CodeAgent(tools=[search_tool, coin_price_tool, dex_screener_api], model=model,
+                      add_base_tools=True)
+    agent.run("Give me the latest token profiles?")
 
 
 if __name__ == '__main__':
     asyncio.run(main())
+
+
