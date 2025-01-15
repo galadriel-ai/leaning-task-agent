@@ -19,6 +19,7 @@ from smolagents import DuckDuckGoSearchTool
 from smolagents import LiteLLMModel
 from smolagents import CodeAgent
 from smolagents import tool
+from smolagents import GradioUI
 
 
 @tool
@@ -72,7 +73,8 @@ async def main():
     search_tool = DuckDuckGoSearchTool()
     agent = CodeAgent(tools=[search_tool, coin_price_tool, dex_screener_api], model=model,
                       add_base_tools=True)
-    agent.run("Give me the latest token profiles?")
+    # agent.run("Give me the latest token profiles?")
+    GradioUI(agent).launch()
 
 
 if __name__ == '__main__':
