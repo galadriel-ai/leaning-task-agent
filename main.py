@@ -11,6 +11,11 @@ Token Research Agent
 * long term memory about user previous sessions and favourite coins, trades etc...
 * RAG system to cache previous coin researches
 
+### TODO
+
+* put tools under tool_utils.py
+*
+
 """
 import asyncio
 import os
@@ -18,51 +23,10 @@ import os
 from smolagents import DuckDuckGoSearchTool
 from smolagents import LiteLLMModel
 from smolagents import CodeAgent
-from smolagents import tool
 from smolagents import GradioUI
 
-
-@tool
-def coin_price_tool(task: str) -> str:
-    """
-    This is a tool that returns the price of given crypto token.
-    It returns the price as float formatted as str.
-
-    Args:
-        task: The name of the token.
-    """
-    return "123.45"  # TODO: sometimes crypto is volatile and price may change
-
-
-# TODO: this API seems to break the Agent loop?
-# TODO: tried to format the results as simple string output
-@tool
-def dex_screener_api(task: str) -> str:
-    """
-    Get the latest token profiles. Returns the results as a big chunk of text with
-    the chain, token address and the description of the Token.
-    Args:
-         task: empty
-    """
-    import requests
-
-    response = requests.get(
-        "https://api.dexscreener.com/token-profiles/latest/v1",
-        headers={},
-    )
-    data = response.json()
-    result = ""
-    for token in data:
-        try:
-            d = "Chain: " + token["chainId"]
-            d += ", tokenAddress: " + token["tokenAddress"]
-            d += ", description: " + token["description"]
-            for link in token["links"]:
-                d += f', {link["type"]}: {link["url"]}'
-            result += d + "\n"
-        except:
-            pass
-    return result
+from tools.dex_screener_tool import dex_screener_api
+from tools.coin_price_tool import coin_price_api
 
 
 async def main():
@@ -71,13 +35,13 @@ async def main():
         api_key=os.getenv("OPENAI_API_KEY"),
     )
     search_tool = DuckDuckGoSearchTool()
-    agent = CodeAgent(tools=[search_tool, coin_price_tool, dex_screener_api], model=model,
-                      add_base_tools=True)
+    agent = CodeAgent(
+        tools=[search_tool, coin_price_api, dex_screener_api],
+        model=model,
+        add_base_tools=True)
     # agent.run("Give me the latest token profiles?")
     GradioUI(agent).launch()
 
 
 if __name__ == '__main__':
     asyncio.run(main())
-
-
