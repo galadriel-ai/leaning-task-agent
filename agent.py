@@ -18,6 +18,7 @@ Token Research Agent
 """
 import asyncio
 import os
+from typing import List
 
 from smolagents import DuckDuckGoSearchTool
 from smolagents import LiteLLMModel
@@ -28,7 +29,8 @@ from tools.dex_screener_tool import dex_screener_api
 from tools.coin_price_tool import coin_price_api
 
 
-async def main():
+# TODO: basic interface for now
+async def execute(user_id: str, task: str, previous_msgs: List[str]) -> str:
     model = LiteLLMModel(
         model_id="openai/gpt-4o",
         api_key=os.getenv("OPENAI_API_KEY"),
@@ -40,7 +42,8 @@ async def main():
         add_base_tools=True)
     agent.run("What is the market cap of ethereum rn?")
     # GradioUI(agent).launch()
+    return "TODO: This is the task output..."
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    asyncio.run(execute())
