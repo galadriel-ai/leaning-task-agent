@@ -13,8 +13,7 @@ Token Research Agent
 
 ### TODO
 
-* put tools under tool_utils.py
-*
+* API
 
 """
 import asyncio
@@ -39,8 +38,8 @@ async def main():
         tools=[search_tool, coin_price_api, dex_screener_api],
         model=model,
         add_base_tools=True)
-    # agent.run("Give me the latest token profiles?")
-    GradioUI(agent).launch()
+    agent.run("What is the market cap of ethereum rn?")
+    # GradioUI(agent).launch()
 
 
 if __name__ == '__main__':
