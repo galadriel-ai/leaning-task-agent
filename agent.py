@@ -54,7 +54,9 @@ async def execute(
         long_term_memory=long_term_memory,
     )
     answer = agent.run(task)
-    repository.add_short_term_memory(user_id, conversation_id, ShortTermMemory(task=(task), result=str(answer)))
+    repository.add_short_term_memory(
+        user_id, conversation_id, ShortTermMemory(task=(task), result=str(answer))
+    )
     repository.add_long_term_memory(user_id, LongTermMemory(content=str(answer)))
     return answer
 
@@ -67,7 +69,12 @@ async def research():
         "Which one to buy?",
     ]
     for question in questions:
-        await execute(repository, "123", "123", question,)
+        await execute(
+            repository,
+            "123",
+            "123",
+            question,
+        )
 
 
 if __name__ == "__main__":

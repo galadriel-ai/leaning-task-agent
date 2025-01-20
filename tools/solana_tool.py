@@ -4,7 +4,7 @@ from smolagents import tool
 from solders.pubkey import Pubkey
 from solders.signature import Signature
 
-PRICE = 10 ** 7
+PRICE = 10**7
 
 
 @tool
@@ -21,8 +21,7 @@ def solana_payment_tool(signature: str, wallet_address: str) -> bool:
     http_client = Client("https://api.mainnet-beta.solana.com")
     tx_sig = Signature.from_string(signature)
     tx_info = http_client.get_transaction(
-        tx_sig=tx_sig,
-        max_supported_transaction_version=10
+        tx_sig=tx_sig, max_supported_transaction_version=10
     )
     if not tx_info.value:
         return False
@@ -58,7 +57,7 @@ def _get_key_index(account_keys: List[Pubkey], wallet_address: str) -> int:
     return -1
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     _signature = "5aqB4BGzQyFybjvKBjdcP8KAstZo81ooUZnf64vSbLLWbUqNSGgXWaGHNteiK2EJrjTmDKdLYHamJpdQBFevWuvy"
     _wallet_address = "5RYHzQuknP2viQjYzP27wXVWKeaxonZgMBPQA86GV92t"
     print(solana_payment_tool(_signature, _wallet_address))

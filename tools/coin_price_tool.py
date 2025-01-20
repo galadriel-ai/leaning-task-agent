@@ -13,11 +13,9 @@ def coin_price_api(task: str) -> str:
         task: The full name of the token. For example 'solana' not 'sol'
     """
     import requests
+
     api_key = os.getenv("COINGECKO_API_KEY")
-    headers = {
-        "accept": "application/json",
-        "x-cg-demo-api-key": api_key
-    }
+    headers = {"accept": "application/json", "x-cg-demo-api-key": api_key}
     response = requests.get(
         "https://api.coingecko.com/api/v3/simple/price"
         "?vs_currencies=usd"
@@ -27,10 +25,11 @@ def coin_price_api(task: str) -> str:
         "&include_last_updated_at=true"
         "&precision=2"
         "&ids=" + task,
-        headers=headers)
+        headers=headers,
+    )
     data = response.json()
     return data
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print(coin_price_api("ethereum"))
