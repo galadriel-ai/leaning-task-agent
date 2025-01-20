@@ -16,34 +16,59 @@ Token Research Agent
 * API
 
 """
+
 import asyncio
 import os
 from typing import List
+from typing import Dict
 
-from smolagents import DuckDuckGoSearchTool
 from smolagents import LiteLLMModel
-from smolagents import CodeAgent
+from research_agent import ResearchAgent
 from smolagents import GradioUI
 
+from entities import ShortTermMemory, LongTermMemory
+from repositories.memory_repository import MemoryRepository
 from tools.dex_screener_tool import dex_screener_api
 from tools.coin_price_tool import coin_price_api
+from tools.solana_tool import solana_payment_tool
 
 
 # TODO: basic interface for now
-async def execute(user_id: str, task: str, previous_msgs: List[str]) -> str:
+async def execute(
+    repository: MemoryRepository,
+    user_id: str,
+    conversation_id: str,
+    task: str,
+) -> str:
     model = LiteLLMModel(
         model_id="openai/gpt-4o",
         api_key=os.getenv("OPENAI_API_KEY"),
     )
-    search_tool = DuckDuckGoSearchTool()
-    agent = CodeAgent(
-        tools=[search_tool, coin_price_api, dex_screener_api],
+    short_term_memory = repository.get_short_term_memory(user_id, conversation_id)
+    long_term_memory = repository.query_long_term_memory(user_id, task)
+    agent = ResearchAgent(
+        tools=[coin_price_api, dex_screener_api, solana_payment_tool],
         model=model,
-        add_base_tools=True)
-    agent.run("What is the market cap of ethereum rn?")
-    # GradioUI(agent).launch()
-    return "TODO: This is the task output..."
+        add_base_tools=True,
+        short_term_memory=short_term_memory,
+        long_term_memory=long_term_memory,
+    )
+    answer = agent.run(task)
+    repository.add_short_term_memory(user_id, conversation_id, ShortTermMemory(task=(task), result=str(answer)))
+    repository.add_long_term_memory(user_id, LongTermMemory(content=str(answer)))
+    return answer
 
 
-if __name__ == '__main__':
-    asyncio.run(execute())
+async def research():
+    repository = MemoryRepository()
+    questions = [
+        "What is the market cap of ethereum rn?",
+        "What is the price of bitcoin rn?",
+        "Which one to buy?",
+    ]
+    for question in questions:
+        await execute(repository, "123", "123", question,)
+
+
+if __name__ == "__main__":
+    asyncio.run(research())
