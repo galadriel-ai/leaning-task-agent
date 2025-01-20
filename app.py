@@ -1,12 +1,15 @@
 import argparse
+import asyncio
 
+import agent
 from domain import parse_twitter_message
+from repositories.memory_repository import MemoryRepository
 from tools import solana_tool
 
 AGENT_WALLET_ADDRESS = "5RYHzQuknP2viQjYzP27wXVWKeaxonZgMBPQA86GV92t"
 
 
-def execute(
+async def execute(
     user_id: str,
     conversation_id: str,
     twitter_message: str,
@@ -19,7 +22,32 @@ def execute(
             wallet_address=AGENT_WALLET_ADDRESS,
         )
         print("is_payment_valid:", is_payment_valid)
-        # TODO: call out agent now after payment has been validated
+        # call out agent now after payment has been validated
+        repository = MemoryRepository()
+        if not repository.add_payment_signature(
+            twitter_message.payment_signature, twitter_message.task
+        ):
+            print("ERROR: Payment has been already used!")
+            return
+        await agent.execute(repository, user_id, conversation_id, twitter_message.task)
+
+
+async def double_spend_for_testing(
+    user_id: str,
+    conversation_id: str,
+    twitter_message: str,
+):
+    await execute(
+        user_id=user_id,
+        conversation_id=conversation_id,
+        twitter_message=twitter_message,
+    )
+    print("\n\nSecond time")
+    await execute(
+        user_id=user_id,
+        conversation_id=conversation_id,
+        twitter_message=twitter_message,
+    )
 
 
 if __name__ == "__main__":
@@ -36,8 +64,11 @@ if __name__ == "__main__":
         required=True,
     )
     args = parser.parse_args()
-    execute(
-        user_id=args.user_id,
-        conversation_id=args.conversation_id,
-        twitter_message=args.twitter_message,
+
+    asyncio.run(
+        execute(
+            user_id=args.user_id,
+            conversation_id=args.conversation_id,
+            twitter_message=args.twitter_message,
+        )
     )

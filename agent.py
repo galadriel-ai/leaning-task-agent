@@ -19,12 +19,9 @@ Token Research Agent
 
 import asyncio
 import os
-from typing import List
-from typing import Dict
 
 from smolagents import LiteLLMModel
 from research_agent import ResearchAgent
-from smolagents import GradioUI
 
 from entities import ShortTermMemory, LongTermMemory
 from repositories.memory_repository import MemoryRepository

@@ -1,5 +1,6 @@
 import chromadb
 from typing import List
+
 from entities import ShortTermMemory
 from entities import LongTermMemory
 
@@ -53,3 +54,27 @@ class MemoryRepository:
         except Exception as e:
             print(e)
             return []
+
+    def add_payment_signature(self, signature: str, task: str) -> bool:
+        """
+        Adds payment signature to DB before starting a task to avoid double spend.
+
+        :param signature:
+        :return: True if payment does not exist, False otherwise
+        """
+        try:
+            collection = self.client.get_collection("payments")
+        except Exception as e:
+            collection = self.client.create_collection("payments")
+
+        payments = collection.get()
+        for _id in payments["ids"]:
+            if _id == signature:
+                print("Payment exists already in DB")
+                return False
+
+        try:
+            collection.add(documents=[task], ids=[signature])
+            return True
+        except Exception as e:
+            print(e)
