@@ -3,6 +3,8 @@ import asyncio
 
 import agent
 from domain import parse_twitter_message
+from domain import post_proof
+from domain.entities import TwitterMessage
 from repositories.memory_repository import MemoryRepository
 from tools import solana_tool
 
@@ -29,25 +31,19 @@ async def execute(
         ):
             print("ERROR: Payment has been already used!")
             return
-        await agent.execute(repository, user_id, conversation_id, twitter_message.task)
+        answer = await agent.execute(
+            repository, user_id, conversation_id, twitter_message.task
+        )
+        _post_proof(twitter_message, answer)
 
 
-async def double_spend_for_testing(
-    user_id: str,
-    conversation_id: str,
-    twitter_message: str,
-):
-    await execute(
-        user_id=user_id,
-        conversation_id=conversation_id,
-        twitter_message=twitter_message,
-    )
-    print("\n\nSecond time")
-    await execute(
-        user_id=user_id,
-        conversation_id=conversation_id,
-        twitter_message=twitter_message,
-    )
+def _post_proof(twitter_message: TwitterMessage, answer: str):
+    request = {"task": twitter_message.task}
+    response = {"answer": answer}
+    print("\nPosting proof:")
+    print("  request:", request)
+    print("  response:", response)
+    post_proof.execute(request, response)
 
 
 if __name__ == "__main__":
